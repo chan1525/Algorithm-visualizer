@@ -27,8 +27,13 @@ ChartJS.register(
 
 interface PerformanceMetricsProps {
   algorithm: AlgorithmConfig;
+  performanceData?: {
+    executionTime: number;
+    memoryUsage: number;
+    comparisons: number;
+    swaps: number;
+  };
 }
-
 interface PerformanceData {
   executionTime: number;
   memoryUsage: number;
@@ -36,13 +41,15 @@ interface PerformanceData {
   swaps: number;
 }
 
-const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ algorithm }) => {
-  const [performanceData, setPerformanceData] = useState<PerformanceData>({
+const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ 
+  algorithm, 
+  performanceData = {
     executionTime: 0,
     memoryUsage: 0,
     comparisons: 0,
     swaps: 0
-  });
+  }
+}) => {
 
   // Sample data for comparison chart
   const comparisonData = {
@@ -85,11 +92,11 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ algorithm }) =>
             <Grid container spacing={2}>
               <Grid size={6}>
                 <Typography variant="body2" color="text.secondary">Execution Time:</Typography>
-                <Typography variant="body1">{performanceData.executionTime} ms</Typography>
+                <Typography variant="body1">{performanceData.executionTime.toFixed(2)} ms</Typography>
               </Grid>
               <Grid size={6}>
                 <Typography variant="body2" color="text.secondary">Memory Usage:</Typography>
-                <Typography variant="body1">{performanceData.memoryUsage} KB</Typography>
+                <Typography variant="body1">{(performanceData.memoryUsage / 1024).toFixed(2)} KB</Typography>
               </Grid>
               <Grid size={6}>
                 <Typography variant="body2" color="text.secondary">Comparisons:</Typography>

@@ -1,6 +1,6 @@
 // src/pages/Algorithm.tsx
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -23,14 +23,21 @@ import GraphVisualizer from '../components/visualizers/graph/GraphVisualizer';
 import TreeVisualizer from '../components/visualizers/tree/TreeVisualizer';
 import SearchVisualizer from '../components/visualizers/search/SearchVisualizer';
 
+import SortingCodes from '../algorithmCodes/sorting';
+import GraphCodes from '../algorithmCodes/graph';
+import TreeCodes from '../algorithmCodes/tree';
+import SearchCodes from '../algorithmCodes/search';
+
+import SortingExplanations from '../algorithmExplanations/sorting';
+import GraphExplanations from '../algorithmExplanations/graph';
+import TreeExplanations from '../algorithmExplanations/tree';
+import SearchExplanations from '../algorithmExplanations/search';
+
+import SortingRelatedAlgorithms from '../algorithmRelated/sorting';
+
 // Import performance components
 import PerformanceMetrics from '../components/analytics/PerformanceMetrics';
 import AlgorithmControls from '../components/common/AlgorithmControls';
-
-
-// Inside the Algorithm component, add this state for code language
-
-
 
 const Algorithm: React.FC = () => {
   const { type, id } = useParams<{ type: string; id: string }>();
@@ -40,8 +47,12 @@ const Algorithm: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [codeLanguage, setCodeLanguage] = useState<'javascript' | 'python' | 'java' | 'cpp'>('javascript');
   const { currentUser } = useAuth();
-
-  // Update in src/pages/Algorithm.tsx
+  const [performanceData, setPerformanceData] = useState({
+    executionTime: 0,
+    memoryUsage: 0,
+    comparisons: 0,
+    swaps: 0
+  });
 
   useEffect(() => {
     const fetchAlgorithm = async () => {
@@ -105,9 +116,16 @@ const Algorithm: React.FC = () => {
 
   // Render the appropriate visualizer based on algorithm type
   const renderVisualizer = () => {
+    const handlePerformanceUpdate = (metrics: any) => {
+      setPerformanceData(metrics);
+    };
+
     switch (type) {
       case 'sorting':
-        return <SortingVisualizer algorithm={algorithm} />;
+        return <SortingVisualizer
+          algorithm={algorithm}
+          onPerformanceUpdate={handlePerformanceUpdate}
+        />;
       case 'graph':
         return <GraphVisualizer algorithm={algorithm} />;
       case 'tree':
@@ -117,6 +135,44 @@ const Algorithm: React.FC = () => {
       default:
         return <Typography color="error">Unsupported algorithm type</Typography>;
     }
+  };
+
+  const getAlgorithmExplanation = () => {
+    if (!algorithm) return null;
+
+    if (algorithm.type === 'sorting' && SortingExplanations[algorithm.name]) {
+      const ExplanationComponent = SortingExplanations[algorithm.name];
+      return <ExplanationComponent />;
+    }
+
+    if (algorithm.type === 'graph' && GraphExplanations[algorithm.name]) {
+      const ExplanationComponent = GraphExplanations[algorithm.name];
+      return <ExplanationComponent />;
+    }
+
+    if (algorithm.type === 'tree' && TreeExplanations[algorithm.name]) {
+      const ExplanationComponent = TreeExplanations[algorithm.name];
+      return <ExplanationComponent />;
+    }
+
+    if (algorithm.type === 'search' && SearchExplanations[algorithm.name]) {
+      const ExplanationComponent = SearchExplanations[algorithm.name];
+      return <ExplanationComponent />;
+    }
+
+    return <p>No detailed explanation available for this algorithm.</p>;
+  };
+
+  const getRelatedAlgorithms = () => {
+    if (!algorithm) return [];
+
+    if (algorithm.type === 'sorting') {
+      return SortingRelatedAlgorithms[algorithm.name] || [];
+    }
+
+    // Add similar code for other algorithm types when implemented
+
+    return [];
   };
 
   return (
@@ -147,7 +203,10 @@ const Algorithm: React.FC = () => {
               </Tabs>
               <Divider />
               <Box sx={{ p: 2 }}>
-                {tabValue === 0 && <PerformanceMetrics algorithm={algorithm} />}
+                {tabValue === 0 && <PerformanceMetrics
+                  algorithm={algorithm}
+                  performanceData={performanceData}
+                />}
                 {tabValue === 1 && (
                   <Box sx={{ width: '100%' }}>
                     <Tabs
@@ -163,614 +222,25 @@ const Algorithm: React.FC = () => {
 
                     <Box component="pre" sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1, overflow: 'auto' }}>
                       <code>
-                        {algorithm.name === 'Quick Sort' && codeLanguage === 'javascript' && `function quickSort(arr) {
-  // Base case: arrays with 0 or 1 element are already sorted
-  if (arr.length <= 1) {
-    return arr;
-  }
+                        {algorithm.type === 'sorting' && SortingCodes[algorithm.name] &&
+                          SortingCodes[algorithm.name][codeLanguage]}
 
-  // Choose a pivot element (here we choose the middle element)
-  const pivotIndex = Math.floor(arr.length / 2);
-  const pivot = arr[pivotIndex];
-  
-  // Partition the array into elements less than pivot and greater than pivot
-  const less = [];
-  const greater = [];
-  
-  // Loop through all elements except the pivot
-  for (let i = 0; i < arr.length; i++) {
-    // Skip the pivot itself
-    if (i === pivotIndex) continue;
-    
-    // Push to appropriate array based on comparison with pivot
-    if (arr[i] <= pivot) {
-      less.push(arr[i]);
-    } else {
-      greater.push(arr[i]);
-    }
-  }
-  
-  // Recursively sort the sub-arrays and concatenate the results
-  return [...quickSort(less), pivot, ...quickSort(greater)];
-}`}
+                        {algorithm.type === 'graph' && GraphCodes[algorithm.name] &&
+                          GraphCodes[algorithm.name][codeLanguage]}
 
-                        {algorithm.name === 'Quick Sort' && codeLanguage === 'python' && `def quick_sort(arr):
-    # Base case: arrays with 0 or 1 element are already sorted
-    if len(arr) <= 1:
-        return arr
-    
-    # Choose a pivot element (here we choose the middle element)
-    pivot_index = len(arr) // 2
-    pivot = arr[pivot_index]
-    
-    # Partition the array into elements less than pivot and greater than pivot
-    less = [arr[i] for i in range(len(arr)) if i != pivot_index and arr[i] <= pivot]
-    greater = [arr[i] for i in range(len(arr)) if i != pivot_index and arr[i] > pivot]
-    
-    # Recursively sort the sub-arrays and concatenate the results
-    return quick_sort(less) + [pivot] + quick_sort(greater)`}
+                        {algorithm.type === 'tree' && TreeCodes[algorithm.name] &&
+                          TreeCodes[algorithm.name][codeLanguage]}
 
-                        {algorithm.name === 'Quick Sort' && codeLanguage === 'java' && `public class QuickSort {
-    public static int[] quickSort(int[] arr) {
-        if (arr.length <= 1) {
-            return arr;
-        }
-        
-        return sort(arr, 0, arr.length - 1);
-    }
-    
-    private static int[] sort(int[] arr, int low, int high) {
-        if (low < high) {
-            // Find partition index
-            int pivotIndex = partition(arr, low, high);
-            
-            // Recursively sort elements before and after partition
-            sort(arr, low, pivotIndex - 1);
-            sort(arr, pivotIndex + 1, high);
-        }
-        
-        return arr;
-    }
-    
-    private static int partition(int[] arr, int low, int high) {
-        // Choose the rightmost element as pivot
-        int pivot = arr[high];
-        
-        // Index of smaller element
-        int i = low - 1;
-        
-        for (int j = low; j < high; j++) {
-            // If current element is smaller than or equal to pivot
-            if (arr[j] <= pivot) {
-                i++;
-                
-                // Swap arr[i] and arr[j]
-                int temp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = temp;
-            }
-        }
-        
-        // Swap arr[i+1] and arr[high] (put the pivot in its correct position)
-        int temp = arr[i + 1];
-        arr[i + 1] = arr[high];
-        arr[high] = temp;
-        
-        return i + 1;
-    }
-}`}
-
-                        {algorithm.name === 'Quick Sort' && codeLanguage === 'cpp' && `#include <vector>
-#include <iostream>
-
-std::vector<int> quickSort(std::vector<int>& arr) {
-    // Base case: arrays with 0 or 1 element are already sorted
-    if (arr.size() <= 1) {
-        return arr;
-    }
-    
-    // Choose a pivot element (here we choose the last element)
-    int pivot = arr.back();
-    
-    // Create vectors for elements less than, equal to, and greater than pivot
-    std::vector<int> less, equal, greater;
-    
-    // Partition the array
-    for (const auto& element : arr) {
-        if (element < pivot) {
-            less.push_back(element);
-        } else if (element == pivot) {
-            equal.push_back(element);
-        } else {
-            greater.push_back(element);
-        }
-    }
-    
-    // Recursively sort the sub-arrays
-    less = quickSort(less);
-    greater = quickSort(greater);
-    
-    // Concatenate the results
-    std::vector<int> result;
-    result.insert(result.end(), less.begin(), less.end());
-    result.insert(result.end(), equal.begin(), equal.end());
-    result.insert(result.end(), greater.begin(), greater.end());
-    
-    return result;
-}`}
-
-                        {algorithm.name === 'Bubble Sort' && codeLanguage === 'javascript' && `function bubbleSort(arr) {
-  const n = arr.length;
-  
-  // Outer loop for passes
-  for (let i = 0; i < n; i++) {
-    // Flag to optimize if no swaps occur in a pass
-    let swapped = false;
-    
-    // Inner loop for comparisons in each pass
-    for (let j = 0; j < n - i - 1; j++) {
-      // Compare adjacent elements
-      if (arr[j] > arr[j + 1]) {
-        // Swap the elements
-        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-        swapped = true;
-      }
-    }
-    
-    // If no swaps occurred in this pass, the array is sorted
-    if (!swapped) {
-      break;
-    }
-  }
-  
-  return arr;
-}`}
-
-                        {algorithm.name === 'Bubble Sort' && codeLanguage === 'python' && `def bubble_sort(arr):
-    n = len(arr)
-    
-    # Outer loop for passes
-    for i in range(n):
-        # Flag to optimize if no swaps occur in a pass
-        swapped = False
-        
-        # Inner loop for comparisons in each pass
-        for j in range(0, n - i - 1):
-            # Compare adjacent elements
-            if arr[j] > arr[j + 1]:
-                # Swap the elements
-                arr[j], arr[j + 1] = arr[j + 1], arr[j]
-                swapped = True
-        
-        # If no swaps occurred in this pass, the array is sorted
-        if not swapped:
-            break
-            
-    return arr`}
-
-                        {algorithm.name === 'Bubble Sort' && codeLanguage === 'java' && `public class BubbleSort {
-    public static int[] bubbleSort(int[] arr) {
-        int n = arr.length;
-        
-        // Outer loop for passes
-        for (int i = 0; i < n; i++) {
-            // Flag to optimize if no swaps occur in a pass
-            boolean swapped = false;
-            
-            // Inner loop for comparisons in each pass
-            for (int j = 0; j < n - i - 1; j++) {
-                // Compare adjacent elements
-                if (arr[j] > arr[j + 1]) {
-                    // Swap the elements
-                    int temp = arr[j];
-                    arr[j] = arr[j + 1];
-                    arr[j + 1] = temp;
-                    swapped = true;
-                }
-            }
-            
-            // If no swaps occurred in this pass, the array is sorted
-            if (!swapped) {
-                break;
-            }
-        }
-        
-        return arr;
-    }
-}`}
-
-                        {algorithm.name === 'Bubble Sort' && codeLanguage === 'cpp' && `#include <vector>
-
-std::vector<int> bubbleSort(std::vector<int>& arr) {
-    int n = arr.size();
-    
-    // Outer loop for passes
-    for (int i = 0; i < n; i++) {
-        // Flag to optimize if no swaps occur in a pass
-        bool swapped = false;
-        
-        // Inner loop for comparisons in each pass
-        for (int j = 0; j < n - i - 1; j++) {
-            // Compare adjacent elements
-            if (arr[j] > arr[j + 1]) {
-                // Swap the elements
-                std::swap(arr[j], arr[j + 1]);
-                swapped = true;
-            }
-        }
-        
-        // If no swaps occurred in this pass, the array is sorted
-        if (!swapped) {
-            break;
-        }
-    }
-    
-    return arr;
-}`}
-
-                        {algorithm.name === 'Merge Sort' && codeLanguage === 'javascript' && `function mergeSort(arr) {
-  // Base case: arrays with 0 or 1 element are already sorted
-  if (arr.length <= 1) {
-    return arr;
-  }
-  
-  // Divide the array into two halves
-  const middle = Math.floor(arr.length / 2);
-  const left = arr.slice(0, middle);
-  const right = arr.slice(middle);
-  
-  // Recursively sort the two halves
-  const sortedLeft = mergeSort(left);
-  const sortedRight = mergeSort(right);
-  
-  // Merge the sorted halves
-  return merge(sortedLeft, sortedRight);
-}
-
-function merge(left, right) {
-  let result = [];
-  let leftIndex = 0;
-  let rightIndex = 0;
-  
-  // Compare elements from both arrays and add the smaller one to the result
-  while (leftIndex < left.length && rightIndex < right.length) {
-    if (left[leftIndex] < right[rightIndex]) {
-      result.push(left[leftIndex]);
-      leftIndex++;
-    } else {
-      result.push(right[rightIndex]);
-      rightIndex++;
-    }
-  }
-  
-  // Add remaining elements from either array
-  return result.concat(left.slice(leftIndex)).concat(right.slice(rightIndex));
-}`}
-
-                        {algorithm.name === 'Merge Sort' && codeLanguage === 'python' && `def merge_sort(arr):
-    # Base case: arrays with 0 or 1 element are already sorted
-    if len(arr) <= 1:
-        return arr
-    
-    # Divide the array into two halves
-    middle = len(arr) // 2
-    left = arr[:middle]
-    right = arr[middle:]
-    
-    # Recursively sort the two halves
-    left = merge_sort(left)
-    right = merge_sort(right)
-    
-    # Merge the sorted halves
-    return merge(left, right)
-
-def merge(left, right):
-    result = []
-    left_index = right_index = 0
-    
-    # Compare elements from both arrays and add the smaller one to the result
-    while left_index < len(left) and right_index < len(right):
-        if left[left_index] < right[right_index]:
-            result.append(left[left_index])
-            left_index += 1
-        else:
-            result.append(right[right_index])
-            right_index += 1
-    
-    # Add remaining elements from either array
-    result.extend(left[left_index:])
-    result.extend(right[right_index:])
-    
-    return result`}
-
-                        {algorithm.name === 'Merge Sort' && codeLanguage === 'java' && `public class MergeSort {
-    public static int[] mergeSort(int[] arr) {
-        // Base case: arrays with 0 or 1 element are already sorted
-        if (arr.length <= 1) {
-            return arr;
-        }
-        
-        // Divide the array into two halves
-        int middle = arr.length / 2;
-        int[] left = new int[middle];
-        int[] right = new int[arr.length - middle];
-        
-        // Copy elements to left and right arrays
-        System.arraycopy(arr, 0, left, 0, middle);
-        System.arraycopy(arr, middle, right, 0, arr.length - middle);
-        
-        // Recursively sort the two halves
-        left = mergeSort(left);
-        right = mergeSort(right);
-        
-        // Merge the sorted halves
-        return merge(left, right);
-    }
-    
-    private static int[] merge(int[] left, int[] right) {
-        int[] result = new int[left.length + right.length];
-        int leftIndex = 0, rightIndex = 0, resultIndex = 0;
-        
-        // Compare elements from both arrays and add the smaller one to the result
-        while (leftIndex < left.length && rightIndex < right.length) {
-            if (left[leftIndex] <= right[rightIndex]) {
-                result[resultIndex++] = left[leftIndex++];
-            } else {
-                result[resultIndex++] = right[rightIndex++];
-            }
-        }
-        
-        // Copy remaining elements from left array
-        while (leftIndex < left.length) {
-            result[resultIndex++] = left[leftIndex++];
-        }
-        
-        // Copy remaining elements from right array
-        while (rightIndex < right.length) {
-            result[resultIndex++] = right[rightIndex++];
-        }
-        
-        return result;
-    }
-}`}
-
-                        {algorithm.name === 'Merge Sort' && codeLanguage === 'cpp' && `#include <vector>
-
-std::vector<int> merge(const std::vector<int>& left, const std::vector<int>& right) {
-    std::vector<int> result;
-    size_t leftIndex = 0, rightIndex = 0;
-    
-    // Compare elements from both arrays and add the smaller one to the result
-    while (leftIndex < left.size() && rightIndex < right.size()) {
-        if (left[leftIndex] < right[rightIndex]) {
-            result.push_back(left[leftIndex++]);
-        } else {
-            result.push_back(right[rightIndex++]);
-        }
-    }
-    
-    // Add remaining elements from left array
-    while (leftIndex < left.size()) {
-        result.push_back(left[leftIndex++]);
-    }
-    
-    // Add remaining elements from right array
-    while (rightIndex < right.size()) {
-        result.push_back(right[rightIndex++]);
-    }
-    
-    return result;
-}
-
-std::vector<int> mergeSort(const std::vector<int>& arr) {
-    // Base case: arrays with 0 or 1 element are already sorted
-    if (arr.size() <= 1) {
-        return arr;
-    }
-    
-    // Divide the array into two halves
-    size_t middle = arr.size() / 2;
-    std::vector<int> left(arr.begin(), arr.begin() + middle);
-    std::vector<int> right(arr.begin() + middle, arr.end());
-    
-    // Recursively sort the two halves
-    left = mergeSort(left);
-    right = mergeSort(right);
-    
-    // Merge the sorted halves
-    return merge(left, right);
-}`}
-
-                        {algorithm.name === 'Heap Sort' && codeLanguage === 'javascript' && `function heapSort(arr) {
-  const n = arr.length;
-  
-  // Build max heap
-  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
-    heapify(arr, n, i);
-  }
-  
-  // Extract elements from heap one by one
-  for (let i = n - 1; i > 0; i--) {
-    // Move current root (maximum value) to the end
-    [arr[0], arr[i]] = [arr[i], arr[0]];
-    
-    // Call max heapify on the reduced heap
-    heapify(arr, i, 0);
-  }
-  
-  return arr;
-}
-
-function heapify(arr, n, i) {
-  let largest = i;       // Initialize largest as root
-  const left = 2 * i + 1;  // Left child
-  const right = 2 * i + 2; // Right child
-  
-  // If left child is larger than root
-  if (left < n && arr[left] > arr[largest]) {
-    largest = left;
-  }
-  
-  // If right child is larger than largest so far
-  if (right < n && arr[right] > arr[largest]) {
-    largest = right;
-  }
-  
-  // If largest is not root
-  if (largest !== i) {
-    // Swap
-    [arr[i], arr[largest]] = [arr[largest], arr[i]];
-    
-    // Recursively heapify the affected sub-tree
-    heapify(arr, n, largest);
-  }
-}`}
-
-                        {algorithm.name === 'Heap Sort' && codeLanguage === 'python' && `def heap_sort(arr):
-    n = len(arr)
-    
-    # Build max heap
-    for i in range(n // 2 - 1, -1, -1):
-        heapify(arr, n, i)
-    
-    # Extract elements from heap one by one
-    for i in range(n - 1, 0, -1):
-        # Move current root (maximum value) to the end
-        arr[0], arr[i] = arr[i], arr[0]
-        
-        # Call max heapify on the reduced heap
-        heapify(arr, i, 0)
-    
-    return arr
-
-def heapify(arr, n, i):
-    largest = i        # Initialize largest as root
-    left = 2 * i + 1   # Left child
-    right = 2 * i + 2  # Right child
-    
-    # If left child is larger than root
-    if left < n and arr[left] > arr[largest]:
-        largest = left
-    
-    # If right child is larger than largest so far
-    if right < n and arr[right] > arr[largest]:
-        largest = right
-    
-    # If largest is not root
-    if largest != i:
-        # Swap
-        arr[i], arr[largest] = arr[largest], arr[i]
-        
-        # Recursively heapify the affected sub-tree
-        heapify(arr, n, largest)`}
-
-                        {algorithm.name === 'Heap Sort' && codeLanguage === 'java' && `public class HeapSort {
-    public static int[] heapSort(int[] arr) {
-        int n = arr.length;
-        
-        // Build max heap
-        for (int i = n / 2 - 1; i >= 0; i--) {
-            heapify(arr, n, i);
-        }
-        
-        // Extract elements from heap one by one
-        for (int i = n - 1; i > 0; i--) {
-            // Move current root (maximum value) to the end
-            int temp = arr[0];
-            arr[0] = arr[i];
-            arr[i] = temp;
-            
-            // Call max heapify on the reduced heap
-            heapify(arr, i, 0);
-        }
-        
-        return arr;
-    }
-    
-    private static void heapify(int[] arr, int n, int i) {
-        int largest = i;      // Initialize largest as root
-        int left = 2 * i + 1;  // Left child
-        int right = 2 * i + 2; // Right child
-        
-        // If left child is larger than root
-        if (left < n && arr[left] > arr[largest]) {
-            largest = left;
-        }
-        
-        // If right child is larger than largest so far
-        if (right < n && arr[right] > arr[largest]) {
-            largest = right;
-        }
-        
-        // If largest is not root
-        if (largest != i) {
-            // Swap
-            int temp = arr[i];
-            arr[i] = arr[largest];
-            arr[largest] = temp;
-            
-            // Recursively heapify the affected sub-tree
-            heapify(arr, n, largest);
-        }
-    }
-}`}
-
-                        {algorithm.name === 'Heap Sort' && codeLanguage === 'cpp' && `#include <vector>
-#include <algorithm> // for std::swap
-
-void heapify(std::vector<int>& arr, int n, int i) {
-    int largest = i;      // Initialize largest as root
-    int left = 2 * i + 1;  // Left child
-    int right = 2 * i + 2; // Right child
-    
-    // If left child is larger than root
-    if (left < n && arr[left] > arr[largest]) {
-        largest = left;
-    }
-    
-    // If right child is larger than largest so far
-    if (right < n && arr[right] > arr[largest]) {
-        largest = right;
-    }
-    
-    // If largest is not root
-    if (largest != i) {
-        // Swap
-        std::swap(arr[i], arr[largest]);
-        
-        // Recursively heapify the affected sub-tree
-        heapify(arr, n, largest);
-    }
-}
-
-std::vector<int> heapSort(std::vector<int>& arr) {
-    int n = arr.size();
-    
-    // Build max heap
-    for (int i = n / 2 - 1; i >= 0; i--) {
-        heapify(arr, n, i);
-    }
-    
-    // Extract elements from heap one by one
-    for (int i = n - 1; i > 0; i--) {
-        // Move current root (maximum value) to the end
-        std::swap(arr[0], arr[i]);
-        
-        // Call max heapify on the reduced heap
-        heapify(arr, i, 0);
-    }
-    
-    return arr;
-}`}
+                        {algorithm.type === 'search' && SearchCodes[algorithm.name] &&
+                          SearchCodes[algorithm.name][codeLanguage]}
                       </code>
                     </Box>
                   </Box>
                 )}
                 {tabValue === 2 && (
                   <Box sx={{ p: 1 }}>
-                    <Typography variant="body1">
-                      {/* Detailed explanation would go here */}
-                      This algorithm works by... (detailed explanation)
+                    <Typography variant="body1" component="div">
+                      {getAlgorithmExplanation()}
                     </Typography>
                   </Box>
                 )}
@@ -811,15 +281,20 @@ std::vector<int> heapSort(std::vector<int>& arr) {
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <Box component="ul" sx={{ pl: 2 }}>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <Typography variant="body2">Algorithm 1</Typography>
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <Typography variant="body2">Algorithm 2</Typography>
-                </Box>
-                <Box component="li" sx={{ mb: 1 }}>
-                  <Typography variant="body2">Algorithm 3</Typography>
-                </Box>
+                {getRelatedAlgorithms().map((relatedAlgo, index) => (
+                  <Box component="li" sx={{ mb: 1 }} key={index}>
+                    <Typography variant="body2">
+                      {relatedAlgo.type ? (
+                        <Link to={`/algorithm/${relatedAlgo.type}/${relatedAlgo.name.replace(/\s+/g, '-').toLowerCase()}`}>
+                          {relatedAlgo.name}
+                        </Link>
+                      ) : (
+                        <strong>{relatedAlgo.name}</strong>
+                      )}
+                      {relatedAlgo.description && ` - ${relatedAlgo.description}`}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
             </Paper>
           </Grid>

@@ -1,26 +1,22 @@
 // src/components/visualizers/sorting/SortingVisualizer.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Alert, 
-  TextField, 
-  Slider, 
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Paper,
-  Divider,
-  Chip
-} from '@mui/material';
+import { Box, Typography, Button, Alert, TextField, Slider, Paper, Chip } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { AlgorithmConfig } from '../../../services/db';
 import { bubbleSort, quickSort, mergeSort, heapSort } from '../../../algorithms/sorting';
 
+// Define PerformanceData interface
+interface PerformanceData {
+  executionTime: number;
+  memoryUsage: number;
+  comparisons: number;
+  swaps: number;
+}
+
+// Update the props interface to include onPerformanceUpdate callback
 interface SortingVisualizerProps {
   algorithm: AlgorithmConfig;
+  onPerformanceUpdate?: (data: PerformanceData) => void;
 }
 
 // Interface for animation frames
@@ -31,7 +27,10 @@ interface AnimationFrame {
   description?: string;
 }
 
-const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm }) => {
+const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ 
+  algorithm,
+  onPerformanceUpdate 
+}) => {
   const [array, setArray] = useState<number[]>([]);
   const [animationFrames, setAnimationFrames] = useState<AnimationFrame[]>([]);
   const [currentFrame, setCurrentFrame] = useState<number>(0);
@@ -127,6 +126,11 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm }) => {
     // Reset current frame
     setCurrentFrame(0);
     
+    // Initialize performance tracking
+    const startTime = performance.now();
+    let comparisons = 0;
+    let swaps = 0;
+    
     // Call the appropriate sorting algorithm based on the algorithm name
     let sortSteps: AnimationFrame[] = [];
     
@@ -152,6 +156,37 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm }) => {
             // Default to bubble sort if algorithm not recognized
             sortSteps = bubbleSort([...inputArray]);
         }
+      }
+      
+      // Calculate performance metrics
+      const endTime = performance.now();
+      const executionTime = endTime - startTime;
+      
+      // Count comparisons and swaps from animation frames
+      for (const frame of sortSteps) {
+        if (frame.comparingIndices && frame.comparingIndices.length > 0) {
+          comparisons++;
+        }
+        if (frame.swappedIndices && frame.swappedIndices.length > 0) {
+          swaps++;
+        }
+      }
+      
+      // Estimate memory usage (this is a rough estimate)
+      // Each number in JavaScript is typically 8 bytes
+      const memoryUsage = inputArray.length * 8 * 3; // Original array + 2 copies during sorting
+      
+      // Update performance metrics
+      const newPerformanceData: PerformanceData = {
+        executionTime,
+        memoryUsage,
+        comparisons,
+        swaps
+      };
+      
+      // Pass performance data to parent component if callback provided
+      if (onPerformanceUpdate) {
+        onPerformanceUpdate(newPerformanceData);
       }
       
       // Add initial frame
@@ -270,7 +305,7 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm }) => {
             size="small"
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }} container justifyContent="flex-start" alignItems="center" spacing={1}>
+        <Grid size={{ xs: 12, md: 6 }} container spacing={1}>
           <Grid size="auto">
             <Button 
               variant="contained" 
@@ -338,7 +373,7 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({ algorithm }) => {
         </Box>
       </Paper>
       
-      {animationFrames.length > 0 && animationFrames[currentFrame].description && (
+      {animationFrames.length > 0 && animationFrames[currentFrame]?.description && (
         <Paper elevation={1} sx={{ p: 2, mb: 2, bgcolor: '#f9f9f9' }}>
           <Typography variant="body2" color="text.secondary">
             Step {currentFrame + 1} of {animationFrames.length}:
