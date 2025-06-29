@@ -65,6 +65,7 @@ const algorithmsToInitialize: Record<string, AlgorithmData[]> = {
       createdBy: 'system',
       createdAt: new Date().toISOString()
     }
+    // A* Search removed
   ],
   tree: [
     {
@@ -91,6 +92,7 @@ const algorithmsToInitialize: Record<string, AlgorithmData[]> = {
       createdBy: 'system',
       createdAt: new Date().toISOString()
     }
+    // Binary Heap removed
   ],
   search: [
     {
@@ -109,6 +111,7 @@ const algorithmsToInitialize: Record<string, AlgorithmData[]> = {
       createdBy: 'system',
       createdAt: new Date().toISOString()
     }
+    // Jump Search and Interpolation Search removed
   ]
 };
 
@@ -117,6 +120,31 @@ async function checkAlgorithmCount(): Promise<number> {
   const algorithmsSnapshot = await getDocs(collection(db, 'algorithms'));
   return algorithmsSnapshot.size;
 }
+
+// Function to remove unwanted algorithms
+export const removeUnwantedAlgorithms = async (): Promise<void> => {
+  const unwantedAlgorithms = [
+    { type: 'graph', name: 'A* Search' },
+    { type: 'tree', name: 'Binary Heap' },
+    { type: 'search', name: 'Jump Search' },
+    { type: 'search', name: 'Interpolation Search' }
+  ];
+  
+  for (const algo of unwantedAlgorithms) {
+    const algoQuery = query(
+      collection(db, 'algorithms'), 
+      where('type', '==', algo.type),
+      where('name', '==', algo.name)
+    );
+    
+    const snapshot = await getDocs(algoQuery);
+    
+    snapshot.docs.forEach(async (docSnap) => {
+      await deleteDoc(doc(db, 'algorithms', docSnap.id));
+      console.log(`Removed unwanted algorithm: ${algo.type} - ${algo.name}`);
+    });
+  }
+};
 
 // Function to initialize algorithms of a specific type
 const initializeAlgorithmType = async (type: string): Promise<void> => {
@@ -162,8 +190,14 @@ export const initializeAlgorithms = async (): Promise<void> => {
   // If we already have a reasonable number of algorithms, skip initialization
   if (algorithmCount > 10) {
     console.log('Algorithms already initialized, skipping...');
+    
+    // Remove unwanted algorithms
+    await removeUnwantedAlgorithms();
     return;
   }
+
+  // First remove any unwanted algorithms
+  await removeUnwantedAlgorithms();
 
   // Initialize each algorithm type
   await initializeAlgorithmType('sorting');

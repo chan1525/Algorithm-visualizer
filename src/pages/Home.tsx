@@ -28,23 +28,23 @@ const algorithmCategories = [
   {
     id: 'graph',
     title: 'Graph Algorithms',
-    description: "Explore graph traversal and pathfinding algorithms like Dijkstra's, A*, BFS, and DFS.",
+    description: "Explore graph traversal and pathfinding algorithms like Dijkstra's,BFS, and DFS.",
     icon: <AccountTreeIcon fontSize="large" />,
-    examples: ["Dijkstra's Algorithm", 'A* Search', 'BFS', 'DFS']
+    examples: ["Dijkstra's Algorithm", 'BFS', 'DFS']
   },
   {
     id: 'tree',
     title: 'Tree Structures',
-    description: 'Learn about tree data structures including Binary Search Trees, AVL Trees, and Heaps.',
+    description: 'Learn about tree data structures including Binary Search Trees, AVL Trees.',
     icon: <StorageIcon fontSize="large" />,
-    examples: ['Binary Search Tree', 'AVL Tree', 'Red-Black Tree', 'Binary Heap']
+    examples: ['Binary Search Tree', 'AVL Tree', 'Red-Black Tree']
   },
   {
     id: 'search',
     title: 'Search Algorithms',
     description: 'Visualize various search techniques and understand their efficiency.',
     icon: <SearchIcon fontSize="large" />,
-    examples: ['Binary Search', 'Linear Search', 'Jump Search', 'Interpolation Search']
+    examples: ['Binary Search', 'Linear Search']
   }
 ];
 
