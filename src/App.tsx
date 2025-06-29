@@ -14,6 +14,7 @@ import Algorithm from './pages/Algorithm';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import { cleanupDuplicateAlgorithms } from './utils/cleanupDuplicates';
 
 // Components
 import Header from './components/common/Header';
@@ -49,10 +50,21 @@ const theme = createTheme({
 
 function App() {
   useEffect(() => {
-    // Initialize default algorithms
-    initializeAlgorithms().catch(err => {
-      console.error('Failed to initialize algorithms:', err);
-    });
+    const setupDatabase = async () => {
+      try {
+        // First clean up any duplicates
+        const duplicatesRemoved = await cleanupDuplicateAlgorithms();
+        console.log(`Removed ${duplicatesRemoved} duplicate algorithms`);
+        
+        // Then initialize algorithms if needed
+        await initializeAlgorithms();
+        console.log('Database initialization complete');
+      } catch (err) {
+        console.error('Error setting up database:', err);
+      }
+    };
+    
+    setupDatabase();
   }, []);
   return (
     <ThemeProvider theme={theme}>

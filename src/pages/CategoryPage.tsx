@@ -21,34 +21,46 @@ const CategoryPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchAlgorithms = async () => {
-      if (!type) {
-        setError('Invalid category type');
-        setLoading(false);
-        return;
-      }
+  // In src/pages/CategoryPage.tsx - update the useEffect hook
+useEffect(() => {
+  const fetchAlgorithms = async () => {
+    if (!type) {
+      setError('Invalid category type');
+      setLoading(false);
+      return;
+    }
 
-      try {
-        setLoading(true);
-        const algorithmsData = await getAlgorithmsByType(type);
+    try {
+      setLoading(true);
+      const algorithmsData = await getAlgorithmsByType(type);
+      
+      if (algorithmsData && algorithmsData.length > 0) {
+        // Filter out duplicates based on algorithm name
+        const uniqueAlgorithms = [];
+        const algorithmNames = new Set();
         
-        if (algorithmsData && algorithmsData.length > 0) {
-          setAlgorithms(algorithmsData);
-          setError(null);
-        } else {
-          setError('No algorithms found for this category');
+        for (const algo of algorithmsData) {
+          if (!algorithmNames.has(algo.name)) {
+            algorithmNames.add(algo.name);
+            uniqueAlgorithms.push(algo);
+          }
         }
-      } catch (err) {
-        console.error('Error fetching algorithms:', err);
-        setError('Failed to load algorithms');
-      } finally {
-        setLoading(false);
+        
+        setAlgorithms(uniqueAlgorithms);
+        setError(null);
+      } else {
+        setError('No algorithms found for this category');
       }
-    };
+    } catch (err) {
+      console.error('Error fetching algorithms:', err);
+      setError('Failed to load algorithms');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchAlgorithms();
-  }, [type]);
+  fetchAlgorithms();
+}, [type]);
 
   const getTypeTitle = (typeStr: string) => {
     switch (typeStr) {
