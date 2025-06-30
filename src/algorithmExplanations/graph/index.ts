@@ -1,8 +1,9 @@
 import React from 'react';
+import DijkstraExplanation from './dijkstraExplanation';
 
-// Placeholder for graph algorithm explanations
+// Create an object that maps algorithm names to their explanation components
 const GraphExplanations: Record<string, React.ComponentType> = {
-  // To be implemented
+  'Dijkstra\'s Algorithm': DijkstraExplanation
 };
 
 export default GraphExplanations;

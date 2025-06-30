@@ -51,6 +51,14 @@ const algorithmsToInitialize: Record<string, AlgorithmData[]> = {
   graph: [
     {
       type: 'graph',
+      name: 'Dijkstra\'s Algorithm',
+      description: 'Dijkstra\'s algorithm is used for finding the shortest paths between nodes in a graph, which may represent, for example, road networks.',
+      parameters: {},
+      createdBy: 'system',
+      createdAt: new Date().toISOString()
+    },
+    {
+      type: 'graph',
       name: 'Breadth-First Search',
       description: 'BFS is an algorithm for traversing or searching tree or graph data structures. It starts at a chosen node and explores all neighbors at the present depth before moving on to nodes at the next depth level.',
       parameters: {},
