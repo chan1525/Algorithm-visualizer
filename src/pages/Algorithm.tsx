@@ -23,6 +23,9 @@ import GraphVisualizer from '../components/visualizers/graph/GraphVisualizer';
 import TreeVisualizer from '../components/visualizers/tree/TreeVisualizer';
 import SearchVisualizer from '../components/visualizers/search/SearchVisualizer';
 
+
+
+
 import SortingCodes from '../algorithmCodes/sorting';
 import GraphCodes from '../algorithmCodes/graph';
 import TreeCodes from '../algorithmCodes/tree';
@@ -34,6 +37,7 @@ import TreeExplanations from '../algorithmExplanations/tree';
 import SearchExplanations from '../algorithmExplanations/search';
 
 import SortingRelatedAlgorithms from '../algorithmRelated/sorting';
+import GraphRelatedAlgorithms from '../algorithmRelated/graph';
 
 // Import performance components
 import PerformanceMetrics from '../components/analytics/PerformanceMetrics';
@@ -127,7 +131,10 @@ const Algorithm: React.FC = () => {
           onPerformanceUpdate={handlePerformanceUpdate}
         />;
       case 'graph':
-        return <GraphVisualizer algorithm={algorithm} />;
+      return <GraphVisualizer 
+        algorithm={algorithm} 
+        onPerformanceUpdate={handlePerformanceUpdate}
+      />;
       case 'tree':
         return <TreeVisualizer algorithm={algorithm} />;
       case 'search':
@@ -169,6 +176,10 @@ const Algorithm: React.FC = () => {
     if (algorithm.type === 'sorting') {
       return SortingRelatedAlgorithms[algorithm.name] || [];
     }
+
+    if (algorithm.type === 'graph' && algorithm.name in GraphRelatedAlgorithms) {
+    return GraphRelatedAlgorithms[algorithm.name] || [];
+  }
 
     // Add similar code for other algorithm types when implemented
 

@@ -16,14 +16,17 @@ import {
 import Grid from '@mui/material/Grid';
 import { AlgorithmConfig } from '../../../services/db';
 import { dijkstra, generateSampleGraph, Graph, Node, Edge } from '../../../algorithms/graph/dijkstra';
+import { dfs } from '../../../algorithms/graph';
 
+// Update the AnimationFrame interface to include stack for DFS
 interface AnimationFrame {
   graph: Graph;
   currentNode: number | null;
   visitedNodes: number[];
-  distances: Record<number, number>;
-  previous: Record<number, number | null>;
+  distances?: Record<number, number>; // Make this optional
+  previous?: Record<number, number | null>; // Make this optional
   path: number[];
+  stack?: number[]; // Add this for DFS
   description?: string;
 }
 
@@ -44,18 +47,32 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
   const [startNode, setStartNode] = useState<number>(0);
   const [endNode, setEndNode] = useState<number>(5);
   const [animationSpeed, setAnimationSpeed] = useState<number>(500); // ms per frame
+  const [currentAlgorithm, setCurrentAlgorithm] = useState<'dijkstra' | 'dfs'>('dijkstra');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Generate a sample graph on mount
   useEffect(() => {
+    console.log("GraphVisualizer initialized with algorithm:", algorithm?.name);
+    
+    // Set the current algorithm based on name
+    if (algorithm && algorithm.name) {
+      if (algorithm.name.includes('Depth')) {
+        setCurrentAlgorithm('dfs');
+      } else {
+        setCurrentAlgorithm('dijkstra');
+      }
+    }
+    
     const newGraph = generateSampleGraph(nodeCount);
     setGraph(newGraph);
     setStartNode(0);
     setEndNode(Math.min(5, nodeCount - 1));
     
-    // Generate initial animation frames
-    generateAnimationFrames(newGraph, 0, Math.min(5, nodeCount - 1));
+    // Generate initial animation frames with a slight delay to ensure components are ready
+    setTimeout(() => {
+      generateAnimationFrames(newGraph, 0, Math.min(5, nodeCount - 1));
+    }, 500);
   }, [algorithm, nodeCount]);
 
   // Animation loop
@@ -80,7 +97,7 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
     if (animationFrames.length > 0 && currentFrame < animationFrames.length) {
       drawGraph(animationFrames[currentFrame]);
     }
-  }, [currentFrame, animationFrames]);
+  }, [currentFrame, animationFrames, currentAlgorithm]);
 
   const generateAnimationFrames = (
     graphData: Graph, 
@@ -93,9 +110,20 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
     // Initialize performance tracking
     const startTime = performance.now();
     
-    // Run Dijkstra's algorithm
+    // Run the appropriate algorithm
     try {
-      const frames = dijkstra(graphData, start, end);
+      let frames;
+      
+      if (algorithm && algorithm.name.includes('Depth')) {
+        // Run DFS
+        frames = dfs(graphData, start);
+        setCurrentAlgorithm('dfs');
+      } else {
+        // Run Dijkstra's by default
+        frames = dijkstra(graphData, start, end);
+        setCurrentAlgorithm('dijkstra');
+      }
+      
       setAnimationFrames(frames);
       
       // Calculate performance metrics
@@ -109,17 +137,19 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
       for (const frame of frames) {
         if (frame.currentNode !== null) {
           nodeVisits++;
-          // Count edge relaxations by looking at changes in distances
-          if (frame.description?.includes('Updated distance')) {
+          // Count edge operations based on current algorithm
+          if (currentAlgorithm === 'dijkstra' && frame.description?.includes('Updated distance')) {
+            edgeRelaxations++;
+          } else if (currentAlgorithm === 'dfs' && frame.description?.includes('Pushed unvisited neighbor')) {
             edgeRelaxations++;
           }
         }
       }
       
-      // Estimate memory usage (this is a rough estimate)
+      // Estimate memory usage
       const memoryUsage = graphData.nodes.length * 24 + 
-                           graphData.edges.length * 12 + 
-                           frames.length * 200;
+                         graphData.edges.length * 12 + 
+                         frames.length * 200;
       
       // Update performance metrics
       const newPerformanceData = {
@@ -129,104 +159,133 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
         swaps: edgeRelaxations
       };
       
+      console.log("Generated performance data:", newPerformanceData);
+      
       // Pass performance data to parent component if callback provided
       if (onPerformanceUpdate) {
         onPerformanceUpdate(newPerformanceData);
+        console.log("Performance data sent to parent");
       }
     } catch (err) {
       console.error('Error generating animation frames:', err);
     }
   };
 
-  const drawGraph = (frame: AnimationFrame) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+ const drawGraph = (frame: AnimationFrame) => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw edges
+  frame.graph.edges.forEach(edge => {
+    const sourceNode = frame.graph.nodes.find(n => n.id === edge.source);
+    const targetNode = frame.graph.nodes.find(n => n.id === edge.target);
     
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw edges
-    frame.graph.edges.forEach(edge => {
-      const sourceNode = frame.graph.nodes.find(n => n.id === edge.source);
-      const targetNode = frame.graph.nodes.find(n => n.id === edge.target);
+    if (sourceNode && targetNode) {
+      let isInPath = false;
       
-      if (sourceNode && targetNode) {
-        const isInPath = frame.path.includes(edge.source) && 
-                         frame.path.includes(edge.target) &&
-                         (frame.previous[edge.target] === edge.source || 
-                          frame.previous[edge.source] === edge.target);
-        
-        // Set edge style
-        ctx.beginPath();
-        ctx.lineWidth = isInPath ? 3 : 1;
-        ctx.strokeStyle = isInPath ? '#f44336' : '#999999';
-        
-        // Draw the edge
-        ctx.moveTo(sourceNode.x, sourceNode.y);
-        ctx.lineTo(targetNode.x, targetNode.y);
-        ctx.stroke();
-        
-        // Draw the weight
-        const midX = (sourceNode.x + targetNode.x) / 2;
-        const midY = (sourceNode.y + targetNode.y) / 2;
-        
-        ctx.fillStyle = '#000000';
-        ctx.font = '12px Arial';
-        ctx.fillText(edge.weight.toString(), midX, midY);
-      }
-    });
-    
-    // Draw nodes
-    frame.graph.nodes.forEach(node => {
-      const isStart = node.id === startNode;
-      const isEnd = node.id === endNode;
-      const isCurrent = node.id === frame.currentNode;
-      const isVisited = frame.visitedNodes.includes(node.id);
-      const isInPath = frame.path.includes(node.id);
-      
-      // Set node style
-      ctx.beginPath();
-      
-      if (isStart) {
-        ctx.fillStyle = '#4caf50'; // Green for start
-      } else if (isEnd) {
-        ctx.fillStyle = '#f44336'; // Red for end
-      } else if (isCurrent) {
-        ctx.fillStyle = '#ff9800'; // Orange for current
-      } else if (isInPath) {
-        ctx.fillStyle = '#e91e63'; // Pink for path
-      } else if (isVisited) {
-        ctx.fillStyle = '#2196f3'; // Blue for visited
-      } else {
-        ctx.fillStyle = '#9e9e9e'; // Gray for unvisited
-      }
-      
-      // Draw the node
-      ctx.arc(node.x, node.y, 20, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // Draw node label
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(node.label, node.x, node.y);
-      
-      // Draw distance if it's not infinity
-      if (frame.distances[node.id] !== Infinity) {
-        ctx.fillStyle = '#000000';
-        ctx.font = '10px Arial';
-        ctx.fillText(
-          `d: ${frame.distances[node.id]}`, 
-          node.x, 
-          node.y + 25
+      // Different path checking for different algorithms
+      if (currentAlgorithm === 'dijkstra') {
+        isInPath = Boolean(
+          frame.path && 
+          frame.path.includes(edge.source) && 
+          frame.path.includes(edge.target) &&
+          frame.previous && 
+          (frame.previous[edge.target] === edge.source || 
+           frame.previous[edge.source] === edge.target)
+        );
+      } else if (currentAlgorithm === 'dfs') {
+        // For DFS, highlight edges that connect sequential nodes in the path
+        const sourceIndex = frame.path ? frame.path.indexOf(edge.source) : -1;
+        const targetIndex = frame.path ? frame.path.indexOf(edge.target) : -1;
+        isInPath = Boolean(
+          sourceIndex !== -1 && 
+          targetIndex !== -1 && 
+          Math.abs(sourceIndex - targetIndex) === 1
         );
       }
-    });
-  };
+      
+      // Set edge style
+      ctx.beginPath();
+      ctx.lineWidth = isInPath ? 3 : 1;
+      ctx.strokeStyle = isInPath ? '#f44336' : '#999999';
+      
+      // Draw the edge
+      ctx.moveTo(sourceNode.x, sourceNode.y);
+      ctx.lineTo(targetNode.x, targetNode.y);
+      ctx.stroke();
+      
+      // Draw the weight
+      const midX = (sourceNode.x + targetNode.x) / 2;
+      const midY = (sourceNode.y + targetNode.y) / 2;
+      
+      ctx.fillStyle = '#000000';
+      ctx.font = '12px Arial';
+      ctx.fillText(edge.weight.toString(), midX, midY);
+    }
+  });
+  
+  // Draw nodes
+  frame.graph.nodes.forEach(node => {
+    const isStart = node.id === startNode;
+    const isEnd = currentAlgorithm === 'dijkstra' ? node.id === endNode : false;
+    const isCurrent = node.id === frame.currentNode;
+    const isVisited = Boolean(frame.visitedNodes && frame.visitedNodes.includes(node.id));
+    const isInPath = Boolean(frame.path && frame.path.includes(node.id));
+    
+    // Set node style
+    ctx.beginPath();
+    
+    if (isStart) {
+      ctx.fillStyle = '#4caf50'; // Green for start
+    } else if (isEnd) {
+      ctx.fillStyle = '#f44336'; // Red for end
+    } else if (isCurrent) {
+      ctx.fillStyle = '#ff9800'; // Orange for current
+    } else if (isInPath) {
+      ctx.fillStyle = '#e91e63'; // Pink for path
+    } else if (isVisited) {
+      ctx.fillStyle = '#2196f3'; // Blue for visited
+    } else {
+      ctx.fillStyle = '#9e9e9e'; // Gray for unvisited
+    }
+    
+    // Draw the node
+    ctx.arc(node.x, node.y, 20, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Draw node label
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(node.label, node.x, node.y);
+    
+    // Draw additional info for Dijkstra's algorithm
+    if (currentAlgorithm === 'dijkstra' && frame.distances && frame.distances[node.id] !== Infinity) {
+      ctx.fillStyle = '#000000';
+      ctx.font = '10px Arial';
+      ctx.fillText(
+        `d: ${frame.distances[node.id]}`, 
+        node.x, 
+        node.y + 25
+      );
+    }
+  });
+  
+  // Draw stack for DFS if available
+  if (currentAlgorithm === 'dfs' && frame.stack) {
+    ctx.fillStyle = '#000000';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Stack: [${frame.stack.join(', ')}]`, 10, 20);
+  }
+};
 
   const regenerateGraph = () => {
     const newGraph = generateSampleGraph(nodeCount);
@@ -331,25 +390,27 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
             </Select>
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <FormControl fullWidth size="small">
-            <InputLabel id="end-node-label">End Node</InputLabel>
-            <Select
-              labelId="end-node-label"
-              id="end-node"
-              value={endNode}
-              label="End Node"
-              onChange={handleEndNodeChange as any}
-            >
-              {graph.nodes.map(node => (
-                <MenuItem key={node.id} value={node.id}>
-                  Node {node.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
+        {currentAlgorithm === 'dijkstra' && (
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="end-node-label">End Node</InputLabel>
+              <Select
+                labelId="end-node-label"
+                id="end-node"
+                value={endNode}
+                label="End Node"
+                onChange={handleEndNodeChange as any}
+              >
+                {graph.nodes.map(node => (
+                  <MenuItem key={node.id} value={node.id}>
+                    Node {node.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        )}
+        <Grid size={{ xs: 12, sm: currentAlgorithm === 'dijkstra' ? 4 : 8 }}>
           <Button 
             variant="outlined" 
             fullWidth
@@ -433,6 +494,23 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
             Next
           </Button>
         </Grid>
+        <Grid size="auto">
+          <Button 
+            variant="outlined" 
+            color="secondary"
+            onClick={() => {
+              // Force recalculation of performance metrics
+              const currentGraph = graph;
+              const currentStart = startNode;
+              const currentEnd = endNode;
+              
+              // Generate frames and calculate metrics
+              generateAnimationFrames(currentGraph, currentStart, currentEnd);
+            }}
+          >
+            Calculate Metrics
+          </Button>
+        </Grid>
       </Grid>
       
       <Grid container spacing={2}>
@@ -442,12 +520,14 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
             sx={{ bgcolor: '#4caf50', color: 'white' }} 
           />
         </Grid>
-        <Grid size="auto">
-          <Chip 
-            label="End Node" 
-            sx={{ bgcolor: '#f44336', color: 'white' }} 
-          />
-        </Grid>
+        {currentAlgorithm === 'dijkstra' && (
+          <Grid size="auto">
+            <Chip 
+              label="End Node" 
+              sx={{ bgcolor: '#f44336', color: 'white' }} 
+            />
+          </Grid>
+        )}
         <Grid size="auto">
           <Chip 
             label="Current Node" 

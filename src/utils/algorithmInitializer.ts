@@ -48,33 +48,39 @@ const algorithmsToInitialize: Record<string, AlgorithmData[]> = {
       createdAt: new Date().toISOString()
     }
   ],
-  graph: [
-    {
-      type: 'graph',
-      name: 'Dijkstra\'s Algorithm',
-      description: 'Dijkstra\'s algorithm is used for finding the shortest paths between nodes in a graph, which may represent, for example, road networks.',
-      parameters: {},
-      createdBy: 'system',
-      createdAt: new Date().toISOString()
+  // In the graph algorithms section
+graph: [
+  {
+    type: 'graph',
+    name: 'Dijkstra\'s Algorithm',
+    description: 'Dijkstra\'s algorithm is used for finding the shortest paths between nodes in a graph, which may represent, for example, road networks.',
+    parameters: { 
+      visualization: 'dijkstra'  // Add this parameter to differentiate visualizations
     },
-    {
-      type: 'graph',
-      name: 'Breadth-First Search',
-      description: 'BFS is an algorithm for traversing or searching tree or graph data structures. It starts at a chosen node and explores all neighbors at the present depth before moving on to nodes at the next depth level.',
-      parameters: {},
-      createdBy: 'system',
-      createdAt: new Date().toISOString()
+    createdBy: 'system',
+    createdAt: new Date().toISOString()
+  },
+  {
+    type: 'graph',
+    name: 'Breadth-First Search',
+    description: 'BFS is an algorithm for traversing or searching tree or graph data structures. It starts at a chosen node and explores all neighbors at the present depth before moving on to nodes at the next depth level.',
+    parameters: {
+      visualization: 'bfs'  // This will be used later when implementing BFS
     },
-    {
-      type: 'graph',
-      name: 'Depth-First Search',
-      description: 'DFS is an algorithm for traversing or searching tree or graph data structures. It starts at a chosen node and explores as far as possible along each branch before backtracking.',
-      parameters: {},
-      createdBy: 'system',
-      createdAt: new Date().toISOString()
-    }
-    // A* Search removed
-  ],
+    createdBy: 'system',
+    createdAt: new Date().toISOString()
+  },
+  {
+    type: 'graph',
+    name: 'Depth-First Search',
+    description: 'DFS is an algorithm for traversing or searching tree or graph data structures. It starts at a chosen node and explores as far as possible along each branch before backtracking.',
+    parameters: {
+      visualization: 'dfs'  // This will be used later when implementing DFS
+    },
+    createdBy: 'system',
+    createdAt: new Date().toISOString()
+  }
+],
   tree: [
     {
       type: 'tree',
