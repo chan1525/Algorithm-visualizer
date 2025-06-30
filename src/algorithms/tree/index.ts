@@ -1,3 +1,4 @@
-import { generateSampleTree } from './redBlackTree';
+import { generateSampleTree as generateRBTree } from './redBlackTree';
+import { generateSampleTree as generateAVLTree } from './avlTree';
 
-export { generateSampleTree };
+export { generateRBTree, generateAVLTree };
