@@ -39,6 +39,7 @@ import SearchExplanations from '../algorithmExplanations/search';
 import SortingRelatedAlgorithms from '../algorithmRelated/sorting';
 import GraphRelatedAlgorithms from '../algorithmRelated/graph';
 import TreeRelatedAlgorithms from '../algorithmRelated/tree';
+import SearchRelatedAlgorithms from '../algorithmRelated/search';
 
 // Import performance components
 import PerformanceMetrics from '../components/analytics/PerformanceMetrics';
@@ -142,7 +143,8 @@ const Algorithm: React.FC = () => {
       onPerformanceUpdate={handlePerformanceUpdate}
     />;
       case 'search':
-        return <SearchVisualizer algorithm={algorithm} />;
+        return <SearchVisualizer  algorithm={algorithm}
+      onPerformanceUpdate={handlePerformanceUpdate} />;
       default:
         return <Typography color="error">Unsupported algorithm type</Typography>;
     }
@@ -188,6 +190,10 @@ const Algorithm: React.FC = () => {
     if (algorithm.type === 'tree' && algorithm.name in TreeRelatedAlgorithms) {
     return TreeRelatedAlgorithms[algorithm.name] || [];
   }
+
+  if (algorithm.type === 'search' && algorithm.name in SearchRelatedAlgorithms) {
+  return SearchRelatedAlgorithms[algorithm.name] || [];
+}
 
     // Add similar code for other algorithm types when implemented
 

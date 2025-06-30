@@ -1,8 +1,9 @@
 import React from 'react';
+import LinearSearchExplanation from './linearSearchExplanation';
 
-// Placeholder for search algorithm explanations
+// Create an object that maps algorithm names to their explanation components
 const SearchExplanations: Record<string, React.ComponentType> = {
-  // To be implemented
+  'Linear Search': LinearSearchExplanation
 };
 
 export default SearchExplanations;
