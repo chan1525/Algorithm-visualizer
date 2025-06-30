@@ -38,6 +38,7 @@ import SearchExplanations from '../algorithmExplanations/search';
 
 import SortingRelatedAlgorithms from '../algorithmRelated/sorting';
 import GraphRelatedAlgorithms from '../algorithmRelated/graph';
+import TreeRelatedAlgorithms from '../algorithmRelated/tree';
 
 // Import performance components
 import PerformanceMetrics from '../components/analytics/PerformanceMetrics';
@@ -136,7 +137,10 @@ const Algorithm: React.FC = () => {
         onPerformanceUpdate={handlePerformanceUpdate}
       />;
       case 'tree':
-        return <TreeVisualizer algorithm={algorithm} />;
+    return <TreeVisualizer 
+      algorithm={algorithm}
+      onPerformanceUpdate={handlePerformanceUpdate}
+    />;
       case 'search':
         return <SearchVisualizer algorithm={algorithm} />;
       default:
@@ -179,6 +183,10 @@ const Algorithm: React.FC = () => {
 
     if (algorithm.type === 'graph' && algorithm.name in GraphRelatedAlgorithms) {
     return GraphRelatedAlgorithms[algorithm.name] || [];
+  }
+
+    if (algorithm.type === 'tree' && algorithm.name in TreeRelatedAlgorithms) {
+    return TreeRelatedAlgorithms[algorithm.name] || [];
   }
 
     // Add similar code for other algorithm types when implemented

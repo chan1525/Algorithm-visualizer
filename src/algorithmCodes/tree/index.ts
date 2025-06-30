@@ -1,6 +1,8 @@
-// Tree algorithm codes will be added here
+import RedBlackTreeCode from './redBlackTreeCode';
+
+// Create an object that maps algorithm names to their code implementations
 const TreeCodes: Record<string, Record<string, string>> = {
-  // To be implemented
+  'Red-Black Tree': RedBlackTreeCode,
 };
 
 export default TreeCodes;

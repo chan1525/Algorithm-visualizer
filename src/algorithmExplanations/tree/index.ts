@@ -1,8 +1,9 @@
 import React from 'react';
+import RedBlackTreeExplanation from './redBlackTreeExplanation';
 
-// Placeholder for tree algorithm explanations
+// Create an object that maps algorithm names to their explanation components
 const TreeExplanations: Record<string, React.ComponentType> = {
-  // To be implemented
+  'Red-Black Tree': RedBlackTreeExplanation
 };
 
 export default TreeExplanations;
