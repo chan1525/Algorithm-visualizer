@@ -16,17 +16,19 @@ import {
 import Grid from '@mui/material/Grid';
 import { AlgorithmConfig } from '../../../services/db';
 import { dijkstra, generateSampleGraph, Graph, Node, Edge } from '../../../algorithms/graph/dijkstra';
-import { dfs } from '../../../algorithms/graph';
+import { dfs, bfs } from '../../../algorithms/graph';
 
 // Update the AnimationFrame interface to include stack for DFS
+// Update the AnimationFrame interface to include queue for BFS
 interface AnimationFrame {
   graph: Graph;
   currentNode: number | null;
   visitedNodes: number[];
-  distances?: Record<number, number>; // Make this optional
-  previous?: Record<number, number | null>; // Make this optional
+  distances?: Record<number, number>;
+  previous?: Record<number, number | null>;
   path: number[];
-  stack?: number[]; // Add this for DFS
+  stack?: number[]; // For DFS
+  queue?: number[]; // For BFS
   description?: string;
 }
 
@@ -47,7 +49,7 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
   const [startNode, setStartNode] = useState<number>(0);
   const [endNode, setEndNode] = useState<number>(5);
   const [animationSpeed, setAnimationSpeed] = useState<number>(500); // ms per frame
-  const [currentAlgorithm, setCurrentAlgorithm] = useState<'dijkstra' | 'dfs'>('dijkstra');
+  const [currentAlgorithm, setCurrentAlgorithm] = useState<'dijkstra' | 'dfs' | 'bfs'>('dijkstra');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -100,76 +102,81 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
   }, [currentFrame, animationFrames, currentAlgorithm]);
 
   const generateAnimationFrames = (
-    graphData: Graph, 
-    start: number, 
-    end: number
-  ) => {
-    // Reset current frame
-    setCurrentFrame(0);
+  graphData: Graph, 
+  start: number, 
+  end: number
+) => {
+  // Reset current frame
+  setCurrentFrame(0);
+  
+  // Initialize performance tracking
+  const startTime = performance.now();
+  
+  // Run the appropriate algorithm
+  try {
+    let frames;
     
-    // Initialize performance tracking
-    const startTime = performance.now();
+    if (algorithm && algorithm.name.includes('Depth')) {
+      // Run DFS
+      frames = dfs(graphData, start);
+      setCurrentAlgorithm('dfs');
+    } else if (algorithm && algorithm.name.includes('Breadth')) {
+      // Run BFS
+      frames = bfs(graphData, start);
+      setCurrentAlgorithm('bfs');
+    } else {
+      // Run Dijkstra's by default
+      frames = dijkstra(graphData, start, end);
+      setCurrentAlgorithm('dijkstra');
+    }
     
-    // Run the appropriate algorithm
-    try {
-      let frames;
-      
-      if (algorithm && algorithm.name.includes('Depth')) {
-        // Run DFS
-        frames = dfs(graphData, start);
-        setCurrentAlgorithm('dfs');
-      } else {
-        // Run Dijkstra's by default
-        frames = dijkstra(graphData, start, end);
-        setCurrentAlgorithm('dijkstra');
-      }
-      
-      setAnimationFrames(frames);
-      
-      // Calculate performance metrics
-      const endTime = performance.now();
-      const executionTime = endTime - startTime;
-      
-      // Count operations (node visits and edge relaxations)
-      let nodeVisits = 0;
-      let edgeRelaxations = 0;
-      
-      for (const frame of frames) {
-        if (frame.currentNode !== null) {
-          nodeVisits++;
-          // Count edge operations based on current algorithm
-          if (currentAlgorithm === 'dijkstra' && frame.description?.includes('Updated distance')) {
-            edgeRelaxations++;
-          } else if (currentAlgorithm === 'dfs' && frame.description?.includes('Pushed unvisited neighbor')) {
-            edgeRelaxations++;
-          }
+    setAnimationFrames(frames);
+    
+    // Calculate performance metrics
+    const endTime = performance.now();
+    const executionTime = endTime - startTime;
+    
+    // Count operations
+    let nodeVisits = 0;
+    let operations = 0;
+    
+    for (const frame of frames) {
+      if (frame.currentNode !== null) {
+        nodeVisits++;
+        // Count operations based on current algorithm
+        if (currentAlgorithm === 'dijkstra' && frame.description?.includes('Updated distance')) {
+          operations++;
+        } else if (currentAlgorithm === 'dfs' && frame.description?.includes('Pushed unvisited neighbor')) {
+          operations++;
+        } else if (currentAlgorithm === 'bfs' && frame.description?.includes('Enqueued unvisited neighbor')) {
+          operations++;
         }
       }
-      
-      // Estimate memory usage
-      const memoryUsage = graphData.nodes.length * 24 + 
-                         graphData.edges.length * 12 + 
-                         frames.length * 200;
-      
-      // Update performance metrics
-      const newPerformanceData = {
-        executionTime,
-        memoryUsage,
-        comparisons: nodeVisits,
-        swaps: edgeRelaxations
-      };
-      
-      console.log("Generated performance data:", newPerformanceData);
-      
-      // Pass performance data to parent component if callback provided
-      if (onPerformanceUpdate) {
-        onPerformanceUpdate(newPerformanceData);
-        console.log("Performance data sent to parent");
-      }
-    } catch (err) {
-      console.error('Error generating animation frames:', err);
     }
-  };
+    
+    // Estimate memory usage
+    const memoryUsage = graphData.nodes.length * 24 + 
+                       graphData.edges.length * 12 + 
+                       frames.length * 200;
+    
+    // Update performance metrics
+    const newPerformanceData = {
+      executionTime,
+      memoryUsage,
+      comparisons: nodeVisits,
+      swaps: operations
+    };
+    
+    console.log("Generated performance data:", newPerformanceData);
+    
+    // Pass performance data to parent component if callback provided
+    if (onPerformanceUpdate) {
+      onPerformanceUpdate(newPerformanceData);
+    }
+  } catch (err) {
+    console.error('Error generating animation frames:', err);
+  }
+};
 
  const drawGraph = (frame: AnimationFrame) => {
   const canvas = canvasRef.current;
@@ -285,6 +292,13 @@ const GraphVisualizer: React.FC<GraphVisualizerProps> = ({
     ctx.textAlign = 'left';
     ctx.fillText(`Stack: [${frame.stack.join(', ')}]`, 10, 20);
   }
+  // Draw queue for BFS if available (similar to stack for DFS)
+if (currentAlgorithm === 'bfs' && frame.queue) {
+  ctx.fillStyle = '#000000';
+  ctx.font = '14px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(`Queue: [${frame.queue.join(', ')}]`, 10, 20);
+}
 };
 
   const regenerateGraph = () => {
