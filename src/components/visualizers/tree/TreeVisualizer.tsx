@@ -17,6 +17,7 @@ import Grid from '@mui/material/Grid';
 import { AlgorithmConfig } from '../../../services/db';
 import { generateSampleTree as generateRBTree, RBNode, Color } from '../../../algorithms/tree/redBlackTree';
 import { generateSampleTree as generateAVLTree, AVLNode } from '../../../algorithms/tree/avlTree';
+import { generateSampleTree as generateBSTree, BSTNode } from '../../../algorithms/tree/binarySearchTree';
 
 // Define a generic animation frame interface that works for both tree types
 interface AnimationFrame {
@@ -43,20 +44,21 @@ const TreeVisualizer: React.FC<TreeVisualizerProps> = ({
   const [inputValue, setInputValue] = useState<string>('30, 20, 40, 10, 25, 35, 50');
   const [keysToInsert, setKeysToInsert] = useState<number[]>([30, 20, 40, 10, 25, 35, 50]);
   const [animationSpeed, setAnimationSpeed] = useState<number>(500); // ms per frame
-  const [treeType, setTreeType] = useState<'rb' | 'avl'>('rb');
+  const [treeType, setTreeType] = useState<'rb' | 'avl' | 'bst'>('rb');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Set tree type based on algorithm name
-  useEffect(() => {
-    if (algorithm && algorithm.name) {
-      if (algorithm.name.includes('AVL')) {
-        setTreeType('avl');
-      } else {
-        setTreeType('rb'); // Default to Red-Black Tree
-      }
+ useEffect(() => {
+  if (algorithm && algorithm.name) {
+    if (algorithm.name.includes('AVL')) {
+      setTreeType('avl');
+    } else if (algorithm.name.includes('Binary Search')) {
+      setTreeType('bst');
+    } else {
+      setTreeType('rb'); // Default to Red-Black Tree
     }
-  }, [algorithm]);
+  }
+}, [algorithm]);
 
   // Generate sample tree on mount
   useEffect(() => {
@@ -92,23 +94,25 @@ const TreeVisualizer: React.FC<TreeVisualizerProps> = ({
   }, [currentFrame, animationFrames]);
 
   const generateAnimationFrames = () => {
-    // Reset current frame
-    setCurrentFrame(0);
+  // Reset current frame
+  setCurrentFrame(0);
+  
+  // Initialize performance tracking
+  const startTime = performance.now();
+  
+  try {
+    // Generate frames for the selected tree type
+    let frames: AnimationFrame[];
     
-    // Initialize performance tracking
-    const startTime = performance.now();
+    if (treeType === 'avl') {
+      frames = generateAVLTree(keysToInsert);
+    } else if (treeType === 'bst') {
+      frames = generateBSTree(keysToInsert);
+    } else {
+      frames = generateRBTree(keysToInsert);
+    }
     
-    try {
-      // Generate frames for the selected tree type
-      let frames: AnimationFrame[];
-      
-      if (treeType === 'avl') {
-        frames = generateAVLTree(keysToInsert);
-      } else {
-        frames = generateRBTree(keysToInsert);
-      }
-      
-      setAnimationFrames(frames);
+    setAnimationFrames(frames);
       
       // Calculate performance metrics
       const endTime = performance.now();
@@ -290,16 +294,18 @@ const TreeVisualizer: React.FC<TreeVisualizerProps> = ({
     ctx.beginPath();
     
     // Determine node fill color
-    if (highlightedNodes.includes(node.key)) {
-      ctx.fillStyle = '#ff9800'; // Highlighted node
-    } else if (changedNodes.includes(node.key)) {
-      ctx.fillStyle = '#2196f3'; // Changed node
-    } else if (treeType === 'rb') {
-      ctx.fillStyle = node.color === Color.RED ? '#f44336' : '#000000';
-    } else {
-      ctx.fillStyle = '#4caf50'; // Green for AVL nodes
-    }
-    
+    // Determine node fill color
+if (highlightedNodes.includes(node.key)) {
+  ctx.fillStyle = '#ff9800'; // Highlighted node
+} else if (changedNodes.includes(node.key)) {
+  ctx.fillStyle = '#2196f3'; // Changed node
+} else if (treeType === 'rb') {
+  ctx.fillStyle = node.color === Color.RED ? '#f44336' : '#000000';
+} else if (treeType === 'avl') {
+  ctx.fillStyle = '#4caf50'; // Green for AVL nodes
+} else {
+  ctx.fillStyle = '#9c27b0'; // Purple for BST nodes
+}
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
     ctx.fill();
     
@@ -522,29 +528,36 @@ const TreeVisualizer: React.FC<TreeVisualizerProps> = ({
       </Grid>
       
       <Grid container spacing={2}>
-        {treeType === 'rb' ? (
-          <>
-            <Grid size="auto">
-              <Chip 
-                label="Red Node" 
-                sx={{ bgcolor: '#f44336', color: 'white' }} 
-              />
-            </Grid>
-            <Grid size="auto">
-              <Chip 
-                label="Black Node" 
-                sx={{ bgcolor: '#000000', color: 'white' }} 
-              />
-            </Grid>
-          </>
-        ) : (
-          <Grid size="auto">
-            <Chip 
-              label="AVL Node" 
-              sx={{ bgcolor: '#4caf50', color: 'white' }} 
-            />
-          </Grid>
-        )}
+  {treeType === 'rb' ? (
+    <>
+      <Grid size="auto">
+        <Chip 
+          label="Red Node" 
+          sx={{ bgcolor: '#f44336', color: 'white' }} 
+        />
+      </Grid>
+      <Grid size="auto">
+        <Chip 
+          label="Black Node" 
+          sx={{ bgcolor: '#000000', color: 'white' }} 
+        />
+      </Grid>
+    </>
+  ) : treeType === 'avl' ? (
+    <Grid size="auto">
+      <Chip 
+        label="AVL Node" 
+        sx={{ bgcolor: '#4caf50', color: 'white' }} 
+      />
+    </Grid>
+  ) : (
+    <Grid size="auto">
+      <Chip 
+        label="BST Node" 
+        sx={{ bgcolor: '#9c27b0', color: 'white' }} 
+      />
+    </Grid>
+  )}
         <Grid size="auto">
           <Chip 
             label="Highlighted Node" 
