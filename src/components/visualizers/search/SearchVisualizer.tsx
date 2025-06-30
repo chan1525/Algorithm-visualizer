@@ -15,6 +15,9 @@ import {
 } from '@mui/material';
 import { AlgorithmConfig } from '../../../services/db';
 import { linearSearch, generateRandomArray, AnimationFrame } from '../../../algorithms/search/linearSearch';
+import { binarySearch, generateRandomSortedArray } from '../../../algorithms/search/binarySearch';
+
+
 
 interface SearchVisualizerProps {
   algorithm: AlgorithmConfig;
@@ -34,6 +37,7 @@ const SearchVisualizer: React.FC<SearchVisualizerProps> = ({
   const [animationSpeed, setAnimationSpeed] = useState<number>(500); // ms per frame
   const [arrayInput, setArrayInput] = useState<string>('');
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSorted, setIsSorted] = useState<boolean>(false);
 
   // Generate a random array on mount
   useEffect(() => {
@@ -57,14 +61,33 @@ const SearchVisualizer: React.FC<SearchVisualizerProps> = ({
     };
   }, [isPlaying, currentFrame, animationFrames.length, animationSpeed]);
 
+  // Add this function inside the SearchVisualizer component
+const generateRandomSortedArray = (size: number = 15, maxValue: number = 100): number[] => {
+  const array = [];
+  for (let i = 0; i < size; i++) {
+    array.push(Math.floor(Math.random() * maxValue));
+  }
+  return array.sort((a, b) => a - b);
+};
+
   const generateNewArray = () => {
-    const newArray = generateRandomArray(arraySize);
-    setArray(newArray);
-    setArrayInput(newArray.join(', '));
-    // Reset animation
-    setAnimationFrames([]);
-    setCurrentFrame(0);
-  };
+  const isAlgorithmBinarySearch = algorithm.name.toLowerCase().includes('binary');
+  let newArray;
+  
+  if (isAlgorithmBinarySearch) {
+    newArray = generateRandomSortedArray(arraySize);
+    setIsSorted(true);
+  } else {
+    newArray = generateRandomArray(arraySize);
+    setIsSorted(false);
+  }
+  
+  setArray(newArray);
+  setArrayInput(newArray.join(', '));
+  // Reset animation
+  setAnimationFrames([]);
+  setCurrentFrame(0);
+};
 
   const handleTargetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
@@ -81,7 +104,7 @@ const SearchVisualizer: React.FC<SearchVisualizerProps> = ({
 
   const handleSubmitArray = () => {
     try {
-      const newArray = arrayInput.split(',').map(item => {
+      let newArray = arrayInput.split(',').map(item => {
         const num = parseInt(item.trim());
         if (isNaN(num)) {
           throw new Error(`Invalid number: ${item.trim()}`);
@@ -93,7 +116,18 @@ const SearchVisualizer: React.FC<SearchVisualizerProps> = ({
         throw new Error('Array cannot be empty');
       }
       
+      const isAlgorithmBinarySearch = algorithm.name.toLowerCase().includes('binary');
+      
+      if (isAlgorithmBinarySearch) {
+        // Sort the array for binary search
+        newArray.sort((a, b) => a - b);
+        setIsSorted(true);
+      } else {
+        setIsSorted(false);
+      }
+      
       setArray(newArray);
+      setArrayInput(newArray.join(', '));
       // Reset animation
       setAnimationFrames([]);
       setCurrentFrame(0);
@@ -120,7 +154,30 @@ const SearchVisualizer: React.FC<SearchVisualizerProps> = ({
     // Generate animation frames based on algorithm
     let frames: AnimationFrame[] = [];
     
-    if (algorithm.name.toLowerCase().includes('linear')) {
+    if (algorithm.name.toLowerCase().includes('binary')) {
+      // Make sure array is sorted for binary search
+      const sortedArray = [...array].sort((a, b) => a - b);
+      
+      if (!isSorted || JSON.stringify(sortedArray) !== JSON.stringify(array)) {
+        // If array is not sorted, show warning and sort it
+        setArray(sortedArray);
+        setArrayInput(sortedArray.join(', '));
+        setIsSorted(true);
+        
+        frames = [
+          {
+            array: sortedArray,
+            currentIndex: null,
+            foundIndex: null,
+            description: 'Array has been sorted for binary search'
+          }
+        ];
+        
+        frames = frames.concat(binarySearch(sortedArray, target));
+      } else {
+        frames = binarySearch(array, target);
+      }
+    } else if (algorithm.name.toLowerCase().includes('linear')) {
       frames = linearSearch(array, target);
     } else {
       // Default to linear search if algorithm not recognized
@@ -185,6 +242,62 @@ const SearchVisualizer: React.FC<SearchVisualizerProps> = ({
   const renderArray = () => {
     if (!animationFrames.length) {
       return (
+        <>
+          {isSorted && (
+            <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
+              <Chip 
+                label="Array is sorted (required for Binary Search)"
+                color="success"
+                size="small"
+              />
+            </Box>
+          )}
+          
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              mt: 2
+            }}
+          >
+            {array.map((value, index) => (
+              <Box
+                key={index}
+                sx={{
+                  width: '40px',
+                  height: '40px',
+                  m: 0.5,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  bgcolor: '#f5f5f5'
+                }}
+              >
+                {value}
+              </Box>
+            ))}
+          </Box>
+        </>
+      );
+    }
+
+    const frame = animationFrames[currentFrame];
+    
+    return (
+      <>
+        {isSorted && (
+          <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
+            <Chip 
+              label="Array is sorted (required for Binary Search)"
+              color="success"
+              size="small"
+            />
+          </Box>
+        )}
+        
         <Box 
           sx={{ 
             display: 'flex', 
@@ -193,73 +306,41 @@ const SearchVisualizer: React.FC<SearchVisualizerProps> = ({
             mt: 2
           }}
         >
-          {array.map((value, index) => (
-            <Box
-              key={index}
-              sx={{
-                width: '40px',
-                height: '40px',
-                m: 0.5,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                bgcolor: '#f5f5f5'
-              }}
-            >
-              {value}
-            </Box>
-          ))}
+          {frame.array.map((value, index) => {
+            let backgroundColor = '#f5f5f5';
+            let borderColor = '#ccc';
+            
+            if (index === frame.currentIndex) {
+              backgroundColor = '#ff9800'; // Current element being checked
+              borderColor = '#f57c00';
+            } else if (index === frame.foundIndex) {
+              backgroundColor = '#4caf50'; // Found element
+              borderColor = '#388e3c';
+            }
+            
+            return (
+              <Box
+                key={index}
+                sx={{
+                  width: '40px',
+                  height: '40px',
+                  m: 0.5,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  border: `2px solid ${borderColor}`,
+                  borderRadius: '4px',
+                  bgcolor: backgroundColor,
+                  color: index === frame.currentIndex || index === frame.foundIndex ? 'white' : 'black',
+                  fontWeight: index === frame.foundIndex ? 'bold' : 'normal'
+                }}
+              >
+                {value}
+              </Box>
+            );
+          })}
         </Box>
-      );
-    }
-
-    const frame = animationFrames[currentFrame];
-    
-    return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          mt: 2
-        }}
-      >
-        {frame.array.map((value, index) => {
-          let backgroundColor = '#f5f5f5';
-          let borderColor = '#ccc';
-          
-          if (index === frame.currentIndex) {
-            backgroundColor = '#ff9800'; // Current element being checked
-            borderColor = '#f57c00';
-          } else if (index === frame.foundIndex) {
-            backgroundColor = '#4caf50'; // Found element
-            borderColor = '#388e3c';
-          }
-          
-          return (
-            <Box
-              key={index}
-              sx={{
-                width: '40px',
-                height: '40px',
-                m: 0.5,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                border: `2px solid ${borderColor}`,
-                borderRadius: '4px',
-                bgcolor: backgroundColor,
-                color: index === frame.currentIndex || index === frame.foundIndex ? 'white' : 'black',
-                fontWeight: index === frame.foundIndex ? 'bold' : 'normal'
-              }}
-            >
-              {value}
-            </Box>
-          );
-        })}
-      </Box>
+      </>
     );
   };
 
@@ -414,6 +495,15 @@ const SearchVisualizer: React.FC<SearchVisualizerProps> = ({
             sx={{ bgcolor: '#4caf50', color: 'white' }} 
           />
         </Grid>
+        {isSorted && (
+          <Grid size="auto">
+            <Chip 
+              label="Sorted Array"
+              color="success"
+              size="small"
+            />
+          </Grid>
+        )}
       </Grid>
     </Box>
   );
