@@ -9,7 +9,9 @@ import {
   CardContent, 
   CardActions, 
   Button,
-  Paper
+  Paper,
+  useTheme,
+  alpha
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import SortIcon from '@mui/icons-material/Sort';
@@ -23,161 +25,387 @@ const algorithmCategories = [
     title: 'Sorting Algorithms',
     description: 'Visualize and compare sorting algorithms like Quicksort, Mergesort, and Heapsort.',
     icon: <SortIcon fontSize="large" />,
-    examples: ['Quicksort', 'Mergesort', 'Heapsort', 'Bubble Sort']
+    examples: ['Quicksort', 'Mergesort', 'Heapsort', 'Bubble Sort'],
+    color: '#6200ea' // Deep purple
   },
   {
     id: 'graph',
     title: 'Graph Algorithms',
-    description: "Explore graph traversal and pathfinding algorithms like Dijkstra's,BFS, and DFS.",
+    description: "Explore graph traversal and pathfinding algorithms like Dijkstra's, BFS, and DFS.",
     icon: <AccountTreeIcon fontSize="large" />,
-    examples: ["Dijkstra's Algorithm", 'BFS', 'DFS']
+    examples: ["Dijkstra's Algorithm", 'BFS', 'DFS'],
+    color: '#2979ff' // Blue
   },
   {
     id: 'tree',
     title: 'Tree Structures',
     description: 'Learn about tree data structures including Binary Search Trees, AVL Trees.',
     icon: <StorageIcon fontSize="large" />,
-    examples: ['Binary Search Tree', 'AVL Tree', 'Red-Black Tree']
+    examples: ['Binary Search Tree', 'AVL Tree', 'Red-Black Tree'],
+    color: '#00c853' // Green
   },
   {
     id: 'search',
     title: 'Search Algorithms',
     description: 'Visualize various search techniques and understand their efficiency.',
     icon: <SearchIcon fontSize="large" />,
-    examples: ['Binary Search', 'Linear Search']
+    examples: ['Binary Search', 'Linear Search'],
+    color: '#ff6d00' // Orange
   }
 ];
 
 const Home: React.FC = () => {
+  const theme = useTheme();
+  
   return (
     <Container maxWidth="lg">
-      <Box sx={{ my: 4 }}>
+      <Box sx={{ my: 6 }}>
         <Paper 
-          elevation={3} 
+          elevation={6} 
           sx={{ 
-            p: 4, 
-            mb: 4, 
-            backgroundImage: 'linear-gradient(to right, #4a148c, #7b1fa2)',
-            color: 'white'
+            p: { xs: 3, md: 5 }, 
+            mb: 6, 
+            borderRadius: '16px',
+            background: `linear-gradient(135deg, #4a148c 0%, #7b1fa2 50%, #9c27b0 100%)`,
+            color: 'white',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
+              background: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+              zIndex: 0,
+            },
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+            transition: 'transform 0.3s',
+            '&:hover': {
+              transform: 'translateY(-5px)',
+            }
           }}
         >
-          <Typography variant="h3" component="h1" gutterBottom>
-            Interactive Algorithm Visualizer
-          </Typography>
-          <Typography variant="h5" gutterBottom>
-            Learn Data Structures and Algorithms through Interactive Visualizations
-          </Typography>
-          <Typography variant="body1" paragraph sx={{ maxWidth: '800px' }}>
-            This platform helps you understand complex algorithms through step-by-step 
-            visualizations and real-time performance analysis. Perfect for students, 
-            interview preparation, and algorithm enthusiasts.
-          </Typography>
-          <Box sx={{ mt: 2 }}>
-            
-            <Button 
-              variant="outlined" 
-              color="inherit" 
-              component={Link} 
-              to="/register"
-              size="large"
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Typography 
+              variant="h3" 
+              component="h1" 
+              gutterBottom 
+              sx={{ 
+                fontWeight: 700,
+                fontSize: { xs: '2rem', md: '3rem' },
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                background: 'linear-gradient(45deg, #f3e5f5 0%, #ffffff 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 3
+              }}
             >
-              Create Account
-            </Button>
+              Interactive Algorithm Visualizer
+            </Typography>
+            <Typography 
+              variant="h5" 
+              gutterBottom
+              sx={{ 
+                fontWeight: 500,
+                mb: 3,
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+              }}
+            >
+              Learn Data Structures and Algorithms through Interactive Visualizations
+            </Typography>
+            <Typography 
+              variant="body1" 
+              paragraph 
+              sx={{ 
+                maxWidth: '800px', 
+                lineHeight: 1.7,
+                fontSize: '1.1rem',
+                mb: 4,
+                opacity: 0.9
+              }}
+            >
+              This platform helps you understand complex algorithms through step-by-step 
+              visualizations and real-time performance analysis. Perfect for students, 
+              interview preparation, and algorithm enthusiasts.
+            </Typography>
+            <Box sx={{ mt: 4 }}>
+              <Button 
+                variant="outlined" 
+                color="inherit" 
+                component={Link} 
+                to="/register"
+                size="large"
+                sx={{
+                  borderWidth: 2,
+                  px: 4,
+                  py: 1,
+                  borderRadius: '30px',
+                  fontSize: '1.1rem',
+                  fontWeight: 500,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    borderWidth: 2,
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                  }
+                }}
+              >
+                Create Account
+              </Button>
+            </Box>
           </Box>
         </Paper>
-        <Box id="algorithm-categories">
-        <Typography variant="h4" component="h2" gutterBottom sx={{ mt: 6, mb: 3 }}>
-          Explore Algorithm Categories
-        </Typography>
+        
+        <Box id="algorithm-categories" sx={{ 
+          scrollMarginTop: '80px', // For smooth scrolling with fixed header
+        }}>
+          <Typography 
+            variant="h4" 
+            component="h2" 
+            gutterBottom 
+            sx={{ 
+              mt: 8, 
+              mb: 5, 
+              fontWeight: 600,
+              textAlign: 'center',
+              position: 'relative',
+              '&:after': {
+                content: '""',
+                display: 'block',
+                width: '80px',
+                height: '4px',
+                background: 'linear-gradient(to right, #4a148c, #7b1fa2)',
+                margin: '16px auto 0',
+                borderRadius: '2px'
+              }
+            }}
+          >
+            Explore Algorithm Categories
+          </Typography>
         </Box>
         
         <Grid container spacing={4}>
           {algorithmCategories.map((category) => (
             <Grid size={{ xs: 12, sm: 6, md: 3 }} key={category.id}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <Box sx={{ 
-                  p: 2, 
+              <Card 
+                sx={{ 
+                  height: '100%', 
                   display: 'flex', 
-                  justifyContent: 'center', 
-                  bgcolor: 'primary.light',
-                  color: 'white'
-                }}>
-                  {category.icon}
+                  flexDirection: 'column',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  boxShadow: 3,
+                  '&:hover': {
+                    transform: 'translateY(-10px)',
+                    boxShadow: 8
+                  }
+                }}
+              >
+                <Box 
+                  sx={{ 
+                    p: 3, 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    background: `linear-gradient(45deg, ${category.color} 30%, ${alpha(category.color, 0.8)} 90%)`,
+                    color: 'white',
+                    height: '120px'
+                  }}
+                >
+                  <Box 
+                    sx={{ 
+                      transform: 'scale(1.5)',
+                      transition: 'transform 0.3s ease',
+                      '& > svg': { fontSize: '3rem' },
+                      '.MuiSvgIcon-root': { 
+                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                      }
+                    }}
+                  >
+                    {category.icon}
+                  </Box>
                 </Box>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h5" component="h2">
+                <CardContent 
+                  sx={{ 
+                    flexGrow: 1, 
+                    p: 3,
+                    bgcolor: alpha(theme.palette.background.paper, 0.9)
+                  }}
+                >
+                  <Typography 
+                    gutterBottom 
+                    variant="h5" 
+                    component="h2"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 2,
+                      color: category.color
+                    }}
+                  >
                     {category.title}
                   </Typography>
-                  <Typography>
+                  <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
                     {category.description}
                   </Typography>
                   <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" color="primary">
+                    <Typography 
+                      variant="subtitle2" 
+                      sx={{
+                        fontWeight: 600,
+                        color: theme.palette.text.secondary
+                      }}
+                    >
                       Examples:
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography 
+                      variant="body2"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontStyle: 'italic'
+                      }}
+                    >
                       {category.examples.join(', ')}
                     </Typography>
                   </Box>
                 </CardContent>
-               <CardActions sx={{ 
-  display: 'flex', 
-  justifyContent: 'center',
-  padding: '16px',
-  width: '100%'
-}}>
-  <Button 
-    variant="contained" 
-    color="primary"
-    component={Link} 
-    to={`/algorithm/${category.id}`}
-    sx={{ 
-      mt: 1,
-      background: 'linear-gradient(to right, #4a148c, #7b1fa2)',
-      color: 'white',
-      '&:hover': {
-        background: 'linear-gradient(to right, #7b1fa2, #4a148c)',
-      },
-      minWidth: '180px'  // Set a minimum width for consistent look
-    }}
-  >
-    Explore 
-  </Button>
-</CardActions>
+                <CardActions 
+                  sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'center',
+                    padding: '16px',
+                    width: '100%',
+                    bgcolor: alpha(theme.palette.background.paper, 0.9)
+                  }}
+                >
+                  <Button 
+                    variant="contained" 
+                    component={Link} 
+                    to={`/algorithm/${category.id}`}
+                    sx={{ 
+                      py: 1.5,
+                      px: 4,
+                      borderRadius: '30px',
+                      background: `linear-gradient(45deg, ${category.color} 30%, ${alpha(category.color, 0.8)} 90%)`,
+                      color: 'white',
+                      fontWeight: 600,
+                      letterSpacing: '0.5px',
+                      boxShadow: `0 4px 20px ${alpha(category.color, 0.4)}`,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        boxShadow: `0 6px 25px ${alpha(category.color, 0.6)}`,
+                        transform: 'translateY(-3px)'
+                      },
+                      minWidth: '180px'
+                    }}
+                  >
+                    Explore
+                  </Button>
+                </CardActions>
               </Card>
             </Grid>
           ))}
         </Grid>
 
-        <Paper sx={{ p: 4, mt: 6, bgcolor: 'background.paper' }}>
-          <Typography variant="h4" component="h2" gutterBottom>
+        <Paper 
+          sx={{ 
+            p: { xs: 3, md: 5 }, 
+            mt: 8, 
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+          }}
+        >
+          <Typography 
+            variant="h4" 
+            component="h2" 
+            gutterBottom 
+            sx={{ 
+              fontWeight: 600,
+              textAlign: 'center',
+              mb: 4,
+              position: 'relative',
+              '&:after': {
+                content: '""',
+                display: 'block',
+                width: '60px',
+                height: '4px',
+                background: 'linear-gradient(to right, #4a148c, #7b1fa2)',
+                margin: '16px auto 0',
+                borderRadius: '2px'
+              }
+            }}
+          >
             Why Visualize Algorithms?
           </Typography>
           <Grid container spacing={4}>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography variant="h6" gutterBottom>
-                Enhanced Learning
-              </Typography>
-              <Typography variant="body1">
-                Seeing algorithms in action helps you understand complex concepts more intuitively than text descriptions alone.
-              </Typography>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography variant="h6" gutterBottom>
-                Compare Performance
-              </Typography>
-              <Typography variant="body1">
-                Analyze real-time metrics to understand big O notation and performance tradeoffs between different algorithms.
-              </Typography>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography variant="h6" gutterBottom>
-                Interview Preparation
-              </Typography>
-              <Typography variant="body1">
-                Strengthen your understanding of DSA fundamentals to excel in technical interviews at top companies.
-              </Typography>
-            </Grid>
+            {[
+              {
+                title: 'Enhanced Learning',
+                description: 'Seeing algorithms in action helps you understand complex concepts more intuitively than text descriptions alone.',
+                icon: '🧠',
+              },
+              {
+                title: 'Compare Performance',
+                description: 'Analyze real-time metrics to understand big O notation and performance tradeoffs between different algorithms.',
+                icon: '📊',
+              },
+              {
+                title: 'Interview Preparation',
+                description: 'Strengthen your understanding of DSA fundamentals to excel in technical interviews at top companies.',
+                icon: '💼',
+              }
+            ].map((item, index) => (
+              <Grid size={{ xs: 12, md: 4 }} key={index}>
+                <Box 
+                  sx={{ 
+                    textAlign: 'center',
+                    p: 3,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    transition: 'transform 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-5px)'
+                    }
+                  }}
+                >
+                  <Typography 
+                    variant="h1" 
+                    sx={{ 
+                      fontSize: '3rem', 
+                      mb: 2,
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                    }}
+                  >
+                    {item.icon}
+                  </Typography>
+                  <Typography 
+                    variant="h6" 
+                    gutterBottom
+                    sx={{
+                      fontWeight: 600,
+                      mb: 2,
+                      color: theme.palette.primary.main
+                    }}
+                  >
+                    {item.title}
+                  </Typography>
+                  <Typography 
+                    variant="body1"
+                    sx={{
+                      lineHeight: 1.7,
+                      color: theme.palette.text.secondary
+                    }}
+                  >
+                    {item.description}
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
           </Grid>
         </Paper>
       </Box>
