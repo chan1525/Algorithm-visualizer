@@ -132,33 +132,6 @@ const Home: React.FC = () => {
               visualizations and real-time performance analysis. Perfect for students, 
               interview preparation, and algorithm enthusiasts.
             </Typography>
-            <Box sx={{ mt: 4 }}>
-              <Button 
-                variant="outlined" 
-                color="inherit" 
-                component={Link} 
-                to="/register"
-                size="large"
-                sx={{
-                  borderWidth: 2,
-                  px: 4,
-                  py: 1,
-                  borderRadius: '30px',
-                  fontSize: '1.1rem',
-                  fontWeight: 500,
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    borderWidth: 2,
-                    transform: 'scale(1.05)',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)'
-                  }
-                }}
-              >
-                Create Account
-              </Button>
-            </Box>
           </Box>
         </Paper>
         

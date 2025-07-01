@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button, Box, alpha } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
-import AlgorithmIcon from '@mui/icons-material/Timeline';
+import AlgorithmIcon from '@mui/icons-material/Analytics';
 
 const Header: React.FC = () => {
   const { currentUser, logout } = useAuth();
@@ -38,7 +38,7 @@ const Header: React.FC = () => {
         }
       }}
     >
-      <Toolbar sx={{ position: 'relative', zIndex: 1 }}>
+      <Toolbar sx={{ position: 'relative', zIndex: 1, minHeight: '80px', py: 2 }}>
         <Box 
           sx={{ 
             flexGrow: 1, 
