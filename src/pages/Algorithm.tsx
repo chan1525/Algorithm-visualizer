@@ -214,7 +214,7 @@ const Algorithm: React.FC = () => {
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 8 }}>
             <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
-              <AlgorithmControls algorithm={algorithm} />
+             
               <Box sx={{ mt: 2, minHeight: '400px' }}>
                 {renderVisualizer()}
               </Box>

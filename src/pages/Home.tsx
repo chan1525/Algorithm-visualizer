@@ -73,16 +73,7 @@ const Home: React.FC = () => {
             interview preparation, and algorithm enthusiasts.
           </Typography>
           <Box sx={{ mt: 2 }}>
-            <Button 
-              variant="contained" 
-              color="secondary" 
-              component={Link} 
-              to="/algorithm/sorting/quicksort"
-              size="large"
-              sx={{ mr: 2 }}
-            >
-              Start Visualizing
-            </Button>
+            
             <Button 
               variant="outlined" 
               color="inherit" 
@@ -94,10 +85,11 @@ const Home: React.FC = () => {
             </Button>
           </Box>
         </Paper>
-
+        <Box id="algorithm-categories">
         <Typography variant="h4" component="h2" gutterBottom sx={{ mt: 6, mb: 3 }}>
           Explore Algorithm Categories
         </Typography>
+        </Box>
         
         <Grid container spacing={4}>
           {algorithmCategories.map((category) => (
@@ -128,15 +120,30 @@ const Home: React.FC = () => {
                     </Typography>
                   </Box>
                 </CardContent>
-                <CardActions>
-                  <Button 
-                    size="small" 
-                    component={Link} 
-                    to={`/algorithm/${category.id}`}
-                  >
-                    Explore
-                  </Button>
-                </CardActions>
+               <CardActions sx={{ 
+  display: 'flex', 
+  justifyContent: 'center',
+  padding: '16px',
+  width: '100%'
+}}>
+  <Button 
+    variant="contained" 
+    color="primary"
+    component={Link} 
+    to={`/algorithm/${category.id}`}
+    sx={{ 
+      mt: 1,
+      background: 'linear-gradient(to right, #4a148c, #7b1fa2)',
+      color: 'white',
+      '&:hover': {
+        background: 'linear-gradient(to right, #7b1fa2, #4a148c)',
+      },
+      minWidth: '180px'  // Set a minimum width for consistent look
+    }}
+  >
+    Explore 
+  </Button>
+</CardActions>
               </Card>
             </Grid>
           ))}

@@ -21,8 +21,8 @@ const Footer: React.FC = () => {
           {'© '}
           {new Date().getFullYear()}
           {' '}
-          <Link color="inherit" href="https://github.com/yourusername">
-            Your Name
+          <Link color="inherit" href="https://github.com/chan1525/Algorithm-visualizer">
+            Chann
           </Link>
         </Typography>
       </Container>
