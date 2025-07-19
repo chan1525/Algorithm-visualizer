@@ -1,46 +1,99 @@
-# Getting Started with Create React App
+# 🧠 Algorithm Visualizer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An interactive web application that visualizes the step-by-step execution of various fundamental algorithms. It provides multi-language code examples (JavaScript, Python, Java, C++) along with intuitive visualizations to help users understand the inner workings of algorithms in real time.
 
-## Available Scripts
+🌐 **Live Demo:** [https://algorithm-visualizer-sand-nine.vercel.app/](https://algorithm-visualizer-sand-nine.vercel.app/)
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## 🚀 Features
 
-Runs the app in the development mode.\
+- 🔍 Visualize popular algorithms:
+  - Graph: BFS, DFS, Dijkstra’s Algorithm
+  - Sorting: Bubble Sort, Heap Sort, Merge Sort, Quick Sort
+  - Searching: Linear Search, Binary Search
+  - Trees: AVL Tree, Red-Black Tree, Binary Search Tree
+- 🌐 Code examples in **JavaScript, Python, Java, and C++**
+- 📖 Algorithm explanations included for conceptual clarity
+- 🔒 Firebase Authentication for secure user login/register
+- 💡 Clean UI built with modular and reusable React components
+
+---
+
+## 🛠 Tech Stack
+
+- **Frontend**: React, TypeScript, CSS
+- **Authentication**: Firebase
+- **State Management**: React Context API
+- **Deployment**: Vercel
+- **Tooling**: Create React App, ESLint, Prettier
+
+---
+
+## 📦 Getting Started
+
+This project was bootstrapped with **Create React App**.
+
+### 📁 Clone the repository
+
+```bash
+git clone https://github.com/your-username/algorithm-visualizer.git
+cd algorithm-visualizer
+```
+
+### 🔧 Install dependencies
+
+```bash
+npm install
+```
+
+### ▶️ Run the development server
+
+```bash
+npm start
+```
+
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+---
 
-### `npm test`
+## 📜 Available Scripts
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- `npm start` – Run the app in development mode  
+- `npm run build` – Builds the app for production  
+- `npm test` – Launches the test runner  
+- `npm run eject` – Ejects the app configuration (use with caution)
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🧩 Folder Structure Overview
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+src/
+│
+├── algorithms/              # Core algorithm logic
+├── algorithmCodes/          # Multi-language code snippets
+├── algorithmExplanations/   # React components with explanations
+├── components/              # Reusable UI components
+├── context/                 # Context API for global state
+├── pages/                   # Application pages (Home, Dashboard, etc.)
+├── services/                # Firebase auth and API services
+├── utils/                   # Helper and setup utilities
+├── App.tsx                  # Main App entry
+└── index.tsx                # Application entry point
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🛡 License
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+This project is licensed under the MIT License.  
+Feel free to fork, contribute, or share!
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 🙌 Acknowledgements
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- [Firebase](https://firebase.google.com/)  
+- [Create React App](https://create-react-app.dev/)  
+- [Vercel](https://vercel.com/)
